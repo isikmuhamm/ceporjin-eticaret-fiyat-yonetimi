@@ -55,10 +55,10 @@ def calculate_new_price_and_discount(row):
     return new_price, discount
 
 # Excel dosyasını okuyun
-df = pd.read_excel('urun_satis_adetleri_oranlari_stoklari.xlsx')
+df = pd.read_excel('/indirim-otomasyonu/urun_satis_adetleri_oranlari_stoklari.xlsx')
 
 # Yeni fiyatları ve indirim oranlarını hesaplayın
 df['Yeni_Fiyat'], df['Yapilan_Indirim'] = zip(*df.apply(calculate_new_price_and_discount, axis=1))
 
 # Sonuçları yeni bir Excel dosyasına kaydedin
-df.to_excel('yeni_satis_fiyatlari.xlsx', index=False)
+df.to_excel('indirim-otomasyonu/yeni_satis_fiyatlari.xlsx', index=False)
