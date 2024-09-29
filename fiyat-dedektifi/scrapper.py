@@ -143,26 +143,32 @@ def search_ciceksepeti(search_term):
     print("Çiçeksepeti Connection Page content loaded.")
     
     products = []
-    print(f"Found {len(soup.find_all("p", class_="products__item-title"))} products.")
     
-    for item in soup.find_all("p", class_="products__item-title")[:30]:
-        product_name = item.get_text()
-        price_integer = item.find_next("span", class_="price__integer-value")
-        price_decimal = item.find_next("span", class_="price__decimal-value-with-currency")
-        if price_integer and price_decimal:
-            price = f"{price_integer.get_text()},{price_decimal.get_text()}"
+    # Ürün isimlerini ve fiyatları çekme
+    for product in soup.find_all("div", class_="products__item"):
+        product_name = product.find("p", class_="products__item-title").get_text().strip()
+
+        # Fiyatı bulma
+        price_now = product.find("div", class_="price--now")
+        if price_now:
+            price_integer = price_now.find("span", class_="price__integer-value").get_text().strip()
+            price_decimal = price_now.find("span", class_="price__decimal-value-with-currency").get_text().strip()
+            price = f"{price_integer}{price_decimal}".strip()
             products.append((product_name, price))
+        else:
+            products.append((product_name, "Fiyat Bulunamadı"))
     
     return products
 
 
+
 def get_results(search_term):
     results = {
-        'Amazon': search_amazon(search_term),
-        'N11': search_n11(search_term),
-        'Hepsiburada': scrapper_hb.search_hepsiburada(search_term),
-        'Trendyol': search_trendyol(search_term),
-        'Pazarama': search_pazarama(search_term),
+        #'Amazon': search_amazon(search_term),
+        #'N11': search_n11(search_term),
+        #'Hepsiburada': scrapper_hb.search_hepsiburada(search_term),
+        #'Trendyol': search_trendyol(search_term),
+        #'Pazarama': search_pazarama(search_term),
         'Çiçeksepeti': search_ciceksepeti(search_term)
     }
     return results
