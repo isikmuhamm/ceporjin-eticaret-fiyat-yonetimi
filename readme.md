@@ -49,4 +49,8 @@ Bu proje, özellikle rakip fiyat izleme ve dinamik fiyat yönetimi yapmak isteye
 
 ## Katkıda Bulunma
 
-Projeye katkıda bulunmak isterseniz, lütfen bir pull request açın veya hataları issue olarak bildirin. 
+Projeye katkıda bulunmak isterseniz, lütfen bir pull request açın veya hataları issue olarak bildirin. Herhangi bir geliştirme için iletişime geçmekten çekinmeyin!
+
+## Lisans
+
+Bu proje MIT lisansı ile lisanslanmıştır.
