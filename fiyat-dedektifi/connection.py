@@ -20,11 +20,14 @@ HEADERS = {
     'Upgrade-Insecure-Requests': '1',
 }
 
+
+
 def create_session(
     retries=MAX_RETRIES,
     backoff_factor=BACKOFF,
     status_forcelist=FORCE_LIST,
     timeout=WAIT_TIME,
+    headers=HEADERS,
     session=None
 ):
     """
@@ -58,6 +61,7 @@ def create_session(
     # Timeout'u her istekte kullanmak için session'un get metodunu override ediyoruz
     def request_with_timeout(method, url, **kwargs):
         kwargs.setdefault('timeout', timeout)
+        kwargs.setdefault('headers', headers)
         return session.request(method, url, **kwargs)
 
     # Timeout'u session get ve post metodlarına bağla
