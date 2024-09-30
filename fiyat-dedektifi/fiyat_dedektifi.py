@@ -44,7 +44,7 @@ for index, row in df.iterrows():
     product_code = row['Urun_Kodu']
 
     # Rastgele bekleme süresi (10-30 saniye)
-    wait_time = random.randint(10, 30)
+    wait_time = random.randint(5, 15)
     print(f"{product_name} için {wait_time} saniye bekleniyor...")
     time.sleep(wait_time)
 

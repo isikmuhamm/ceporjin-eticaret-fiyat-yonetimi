@@ -144,9 +144,20 @@ def search_ciceksepeti(search_term):
     
     products = []
     
+    # Ürünlerin olup olmadığını kontrol et
+    product_items = soup.find_all("div", class_="products__item")
+    
+    if not product_items:
+        print(f"Çiçeksepeti araması için '{search_term}' sonucu ürün bulunamadı.")
+        return [("Ürün bulunamadı", "")]
+    
     # Ürün isimlerini ve fiyatları çekme
-    for product in soup.find_all("div", class_="products__item"):
-        product_name = product.find("p", class_="products__item-title").get_text().strip()
+    for product in product_items:
+        product_name_tag = product.find("p", class_="products__item-title")
+        if product_name_tag:
+            product_name = product_name_tag.get_text().strip()
+        else:
+            product_name = "Ürün İsmi Bulunamadı"
 
         # Fiyatı bulma
         price_now = product.find("div", class_="price--now")
