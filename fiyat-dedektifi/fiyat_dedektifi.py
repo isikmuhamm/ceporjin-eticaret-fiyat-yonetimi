@@ -43,8 +43,8 @@ for index, row in df.iterrows():
     product_name = row['Urun_Adi']
     product_code = row['Urun_Kodu']
 
-    # Rastgele bekleme süresi (10-30 saniye)
-    wait_time = random.randint(5, 15)
+    # Rastgele bekleme süresi (5-15 saniye)
+    wait_time = random.randint(5, 15 )
     print(f"{product_name} için {wait_time} saniye bekleniyor...")
     time.sleep(wait_time)
 
