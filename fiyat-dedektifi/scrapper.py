@@ -1,28 +1,17 @@
-import requests
 from bs4 import BeautifulSoup
-import scrapper_hb #Hepsiburada Selenium ile ayrı bir scriptte çalışıyor.
-import connection #Bağlantı kurmak için daha detaylı ve yeniden deneyen bir script.
+from connection import wait_for_page_load
 
-
-# Amazon Arama Fonksiyonu
-def search_amazon(search_term):
-    session = connection.create_session()
+def search_amazon(search_term, driver):
     url = f"https://www.amazon.com.tr/s?k={search_term}&s=price-asc-rank"
     
     try:
-        response = session.get(url)
-        print(f"Amazon Connection Status Code: {response.status_code}")
+        driver.get(url)
+        wait_for_page_load(driver)
         
-        if response.status_code != 200:
-            print("Amazon Connection Request failed.")
-            return []
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if soup: print("Amazon Connection Page content loaded.")
-
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         products = []
         items = soup.find_all("span", class_="a-size-base-plus a-color-base a-text-normal")
-        print(f"Found {len(items)} products.")
+        print(f"Amazon: Found {len(items)} products.")
 
         for item in items[:30]:
             product_name = item.get_text()
@@ -33,31 +22,21 @@ def search_amazon(search_term):
                 products.append((product_name, price))
         
         return products
-
-    except requests.exceptions.RequestException as e:
-        print(f"Amazon bağlantısı sırasında hata oluştu: {e}")
+    except Exception as e:
+        print(f"Amazon error: {e}")
         return []
 
-
-# N11 Arama Fonksiyonu
-def search_n11(search_term):
-    session = connection.create_session()
+def search_n11(search_term, driver):
     url = f"https://www.n11.com/arama?q={search_term.replace(' ', '+')}&srt=PRICE_LOW"
     
     try:
-        response = session.get(url)
-        print(f"N11 Connection Status Code: {response.status_code}")
+        driver.get(url)
+        wait_for_page_load(driver)
         
-        if response.status_code != 200:
-            print("N11 Connection Request failed.")
-            return []
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if soup: print("N11 Connection Page content loaded.")
-
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         products = []
         items = soup.find_all("div", class_="pro")
-        print(f"Found {len(items)} products.")
+        print(f"N11: Found {len(items)} products.")
         
         for item in items[:30]:
             product_name_tag = item.find("h3", class_="productName")
@@ -72,31 +51,21 @@ def search_n11(search_term):
                     products.append((product_name, price))
         
         return products
-
-    except requests.exceptions.RequestException as e:
-        print(f"N11 bağlantısı sırasında hata oluştu: {e}")
+    except Exception as e:
+        print(f"N11 error: {e}")
         return []
 
-
-# Trendyol Arama Fonksiyonu
-def search_trendyol(search_term):
-    session = connection.create_session()
+def search_trendyol(search_term, driver):
     url = f"https://www.trendyol.com/sr?q={search_term}&sst=PRICE_BY_ASC"
     
     try:
-        response = session.get(url)
-        print(f"Trendyol Connection Status Code: {response.status_code}")
+        driver.get(url)
+        wait_for_page_load(driver)
         
-        if response.status_code != 200:
-            print("Trendyol Connection Request failed.")
-            return []
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if soup: print("Trendyol Connection Page content loaded.")
-        
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         products = []
         items = soup.find_all("h3", class_="prdct-desc-cntnr-ttl-w")
-        print(f"Found {len(items)} products.")
+        print(f"Trendyol: Found {len(items)} products.")
 
         for item in items[:30]:
             product_name = item.get_text()
@@ -105,97 +74,104 @@ def search_trendyol(search_term):
                 products.append((product_name, price.get_text()))
         
         return products
-
-    except requests.exceptions.RequestException as e:
-        print(f"Trendyol bağlantısı sırasında hata oluştu: {e}")
+    except Exception as e:
+        print(f"Trendyol error: {e}")
         return []
 
-
-# Pazarama Arama Fonksiyonu
-def search_pazarama(search_term):
-    session = connection.create_session()
+def search_pazarama(search_term, driver):
     url = f"https://www.pazarama.com/arama?q={search_term.replace(' ', '%20')}&siralama=artan-fiyat"
     
     try:
-        response = session.get(url)
-        print(f"Pazarama Connection Status Code: {response.status_code}")
+        driver.get(url)
+        wait_for_page_load(driver)
         
-        if response.status_code != 200:
-            print("Pazarama Connection Request failed.")
-            return []
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if soup: print("Pazarama Connection Page content loaded.")
-        
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         products = []
         items = soup.find_all("div", class_="product-card")
-        print(f"Found {len(items)} products.")
+        print(f"Pazarama: Found {len(items)} products.")
 
         for item in items[:30]:
-            product_name = item.find("div", class_="line-clamp-2 text-gray-600 h-8 text-xs leading-4 mb-1.5").get_text(strip=True)
+            product_name = item.find("div", class_="line-clamp-2 text-gray-600 h-8 text-xs leading-4 mb-1.5")
+            if product_name:
+                product_name = product_name.get_text(strip=True)
             
             price = item.find("div", class_="leading-tight text-blue-500 font-semibold text-huge") or \
                     item.find("div", class_="leading-tight font-semibold text-huge text-gray-600") or \
                     item.find("div", class_="leading-tight font-semibold text-huge text-error")
             
-            if price:
+            if price and product_name:
                 price_text = price.get_text(strip=True)
                 products.append((product_name, price_text))
         
         return products
-
-    except requests.exceptions.RequestException as e:
-        print(f"Pazarama bağlantısı sırasında hata oluştu: {e}")
+    except Exception as e:
+        print(f"Pazarama error: {e}")
         return []
 
-
-# Çiçeksepeti Arama Fonksiyonu
-def search_ciceksepeti(search_term):
-    session = connection.create_session()
-    url = f"https://www.ciceksepeti.com/arama?choice=1&orderby=3&query={search_term}"
-    
+def search_ciceksepeti(search_term, driver):
+    url = f"https://www.ciceksepeti.com/arama?query={search_term.replace(' ', '%20')}&qt={search_term.replace(' ', '%20')}&choice=1"
     try:
-        response = session.get(url)
-        print(f"Çiçeksepeti Connection Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            print("Çiçeksepeti Connection Request failed.")
-            return []
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if soup: print("Çiçeksepeti Connection Page content loaded.")
-        
+        driver.get(url)
+        wait_for_page_load(driver)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         products = []
-        items = soup.find_all("div", class_="products__item")
-        print(f"Found {len(items)} products.")
+
+        # Ürün kartlarını bul
+        items = soup.find_all("a", attrs={"data-cs-product-box": "true"})
+        print(f"Çiçeksepeti: Found {len(items)} products.")
         
         for item in items[:30]:
-            product_name_tag = item.find("p", class_="products__item-title")
-            if product_name_tag:
-                product_name = product_name_tag.get_text().strip()
+            product_name = item.find("span", attrs={"data-cs-pb-name": "true"})
+            price_tag = item.find("span", attrs={"data-cs-pb-price-text": "true"})
 
-            price_now = item.find("div", class_="price--now")
-            if price_now:
-                price_integer = price_now.find("span", class_="price__integer-value").get_text().strip()
-                price_decimal = price_now.find("span", class_="price__decimal-value-with-currency").get_text().strip()
-                price = f"{price_integer}{price_decimal}".strip()
-                products.append((product_name, price))
+            if product_name and price_tag:
+                name = product_name.text.strip()
+                price = price_tag.text.strip()
+                products.append((name, price))
         
         return products
-
-    except requests.exceptions.RequestException as e:
-        print(f"Çiçeksepeti bağlantısı sırasında hata oluştu: {e}")
+    except Exception as e:
+        print(f"Çiçeksepeti error: {e}")
         return []
 
+def search_hepsiburada(search_term, driver):
+    url = f"https://www.hepsiburada.com/ara?q={search_term}&siralama=artanfiyat"
+    
+    try:
+        driver.get(url)
+        wait_for_page_load(driver)
+        
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        products = []
+        items = soup.find_all("li", class_="productListContent-zAP0Y5msy8OHn5z7T_K_")
+        print(f"Hepsiburada: Found {len(items)} products.")
+        
+        for item in items[:30]:
+            name_element = item.find("h3", {"data-test-id": "product-card-name"})
+            price_element = item.find("div", {"data-test-id": "price-current-price"})
 
-# Sonuçları getirme fonksiyonu
-def get_results(search_term):
-    results = {
-        'Amazon': search_amazon(search_term),
-        'N11': search_n11(search_term),
-        'Hepsiburada': scrapper_hb.search_hepsiburada(search_term),
-        'Trendyol': search_trendyol(search_term),
-        'Pazarama': search_pazarama(search_term),
-        'Çiçeksepeti': search_ciceksepeti(search_term)
-    }
-    return results
+            if name_element and price_element:
+                name = name_element.text.strip()
+                price = price_element.text.strip()
+                products.append((name, price))
+        
+        return products
+    except Exception as e:
+        print(f"Hepsiburada error: {e}")
+        return []
+
+def get_results(search_term, driver):
+   
+    try:
+        results = {
+            'Amazon': search_amazon(search_term, driver),
+            'N11': search_n11(search_term, driver),
+            'Hepsiburada': search_hepsiburada(search_term, driver),
+            'Trendyol': search_trendyol(search_term, driver),
+            'Pazarama': search_pazarama(search_term, driver),
+            'Çiçeksepeti': search_ciceksepeti(search_term, driver)
+        }
+        return results
+    except Exception as e:
+        print(f"Getting results error: {e}")
+        return []

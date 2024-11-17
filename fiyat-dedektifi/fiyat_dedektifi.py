@@ -1,8 +1,8 @@
 import pandas as pd
-import time
-import random
 import os
 from scrapper import get_results
+from connection import setup_driver
+
 
 # Excel dosyasını oku
 input_file = 'fiyat-dedektifi/urunler.xlsx'  # Excel dosyasının adı
@@ -38,18 +38,18 @@ def calculate_prices(products):
     return None, None, None
 
 
+
 # Her ürünü işle
 for index, row in df.iterrows():
     product_name = row['Urun_Adi']
     product_code = row['Urun_Kodu']
 
-    # Rastgele bekleme süresi (5-15 saniye)
-    wait_time = random.randint(5, 15 )
-    print(f"{product_name} için {wait_time} saniye bekleniyor...")
-    time.sleep(wait_time)
+    print(f"\n\n{product_code} kodlu {product_name} için program çalışıyor...")
 
+    driver = setup_driver() # Çiçeksepeti bot koruması devreye girdiği için her döngüde driver yeniden başlatılıyor. Performansı düşürüyor ama başka çözüm bulamadım.
     # Her site için arama yap
-    results = get_results(product_name)
+    results = get_results(product_name, driver)
+    driver.quit()
     
     # Çıktıyı bir dosyaya yaz
     output_file = os.path.join(output_dir, f"{product_code}.txt")
@@ -76,6 +76,8 @@ for index, row in df.iterrows():
         df.at[index, f"{site} Min"] = prices['Min']
         df.at[index, f"{site} Avg"] = prices['Avg']
         df.at[index, f"{site} Max"] = prices['Max']
+
+
 
 # Güncellenmiş veriyi yeni bir Excel dosyasına kaydet
 output_excel_file = 'fiyat-dedektifi/urunler_sonuc.xlsx'
